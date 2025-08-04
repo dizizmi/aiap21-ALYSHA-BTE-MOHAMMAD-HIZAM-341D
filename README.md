@@ -1,27 +1,31 @@
 ALYSHA BTE MOHAMMAD HIZAM
 alyshabm000@gmail.com
 
-## Indoor Quality Monitoring for Elderly ML Pipeline
+# Indoor Quality Monitoring for Elderly ML Pipeline
 
 The project builds a ML pipeline to predict the activity level of elderly individuals living alone, based on indoor environmental sensor data. It includes preprocessing, modeling, evaluation, and interpretation of the key contributing features to activity-level classification.
 
 The project is structured the following:
 
+```bash
 aiap21-ALYSHA-BTE-MOHAMMAD-HIZAM-341D/
-├── data/ gas_monitoring.db                 
+├── data/
+│ └── gas_monitoring.db
+│
 ├── src/
-├─────extract_target.py (extract and normalizes target label, convert numeric using LabelEncoder, returns X,y and the encoder)   
-├─────load_data.py (connects to database and loads main())
-├─────preprocessing.py (cleans raw categorical col w one hot encoding)
-├─────scale_sensors.py (handles 'sensors' value preprocessing and fills NaN with meadian and scale feature with StandardScaler, normalizes inconsistent text)
-├─────train_model.py (train baseline models, evaluates accuracy/precision/f1/confusion matrix, plot results)   
-├── eda.ipynb                
-├── requirements.txt 
-├── run.sh           
-└── README.md              
+│ ├── extract_target.py # Extracts and normalizes target label, converts numeric using LabelEncoder, returns X, y, and the encoder
+│ ├── load_data.py # Connects to database and loads data (main entry point)
+│ ├── preprocessing.py # Cleans raw categorical columns with one-hot encoding
+│ ├── scale_sensors.py # Preprocesses 'sensors' values, fills NaN with median, scales features with StandardScaler, normalizes inconsistent text
+│ └── train_model.py # Trains baseline models, evaluates accuracy/precision/F1/confusion matrix, plots results
+│
+├── eda.ipynb # Exploratory Data Analysis notebook
+├── requirements.txt # Python dependencies
+├── run.sh # Executable script to run the pipeline
+└── README.md # Project documentation                                                           
+```
 
-
-# The logical flow 
+## The Logical Flow
 | Stage                | Details                                                                 |
 |---------------------|------------------------------------------------------------------------- |
 | Data Loading         | Structured import from `.db` using SQLite and Pandas                    |
@@ -32,7 +36,7 @@ aiap21-ALYSHA-BTE-MOHAMMAD-HIZAM-341D/
 | Evaluation           | Used F1 and confusion matrix to assess health-critical misclassifications |
 | Deployment Thinking  | Considered class imbalance, real-time applicability, and feature insights |
 
-
+#
 To execute: 
 ```bash
 # 1. Load and preprocess
@@ -52,10 +56,10 @@ To change test size or model parameters, edit:
 - `train_test_split()`: test size
 
 
-# EDA Findings
+## EDA Findings
 Refer to eda.ipynb for eda.
 
-# Feature processing summary
+## Feature Processing Summary
 | Feature                          | Type         | Processing                               |
 |----------------------------------|--------------|------------------------------------------|
 | Temperature, Humidity            | Continuous   | Fill missing + z-score scaling           |
@@ -75,7 +79,7 @@ Environmental domain insights supported these decisions:
 > - RH between 40–60% was considered optimal
 > - Dim light for prolonged periods at night suggested inactivity or fall risk
 
-# Model used
+# Models Used
 | Model               | Rationale                                         |
 |--------------------|--------------------------------------------------- |
 | Random Forest       | Handles non-linear data, gives feature importance |
@@ -98,21 +102,22 @@ Environmental domain insights supported these decisions:
 - **F1 Score (weighted)**: balanced metric that accounts for class imbalance
 - **Confusion Matrix**: visual inspection of misclassifications\
 
-Example Insight: Poor recall on "high activity" could represent a missed detection of important behavior change or fall risk in an elderly individual.
+Example Insight: 
+> - Poor recall on "high activity" could represent a missed detection of important behavior change or fall risk in an elderly individual.
 
 ## Model Evaluation
 To assess how well each model could predict elderly residents’ activity levels based on indoor environmental conditions, I trained and evaluated four classification models using a holdout test set (30% of the data). The models were selected to reflect a range of complexity and interpretability.
-Random Forest performed the strongest overall, achieving an accuracy of 67.7% and a weighted F1 score of 0.657. It showed robust generalization, particularly in identifying low and moderate activity levels. However, it struggled with the high activity class (F1: 0.19), likely due to class imbalance. Feature importance analysis highlighted MetalOxideSensor_Unit4, CO2_ElectroChemicalSensor, and Temperature as the most influential predictors—aligning with literature on indoor air quality impacts.
+Random Forest performed the strongest overall, achieving an accuracy of 67.7% and a weighted F1 score of 0.657. It showed robust generalization, particularly in identifying low and moderate activity levels. However, it struggled with the high activity class (F1: 0.19) likely due to class imbalance. Feature importance analysis highlighted MetalOxideSensor_Unit4, CO2_ElectroChemicalSensor, and Temperature as the most influential predictors which aligns with study insights on indoor air quality impacts.
 
-Logistic Regression reached 62.6% accuracy with a weighted F1 score of 0.582, but it failed to classify high activity instances altogether. This suggests the model's linear assumptions may be too limiting for the nonlinear patterns in this data. Despite this, it offered high interpretability through its coefficients, with CO_GasSensor_low, MetalOxideSensor_Unit4, and Ambient Light Level_dim emerging as key contributors.
+Logistic Regression reached 62.6% accuracy with a weighted F1 score of 0.582, but it failed to classify high activity instances altogether. This suggests the model's linear assumptions may be too limiting for the nonlinear patterns in this data. It offered high interpretability through its coefficients with CO_GasSensor_low, MetalOxideSensor_Unit4, and Ambient Light Level_dim emerging as key contributors.
 
-Support Vector Machine (SVM) achieved a balance between the two with 64.3% accuracy and 0.612 weighted F1, but similar to logistic regression, it struggled to predict high activity cases. The RBF kernel captured moderate nonlinearities, yet the class imbalance again limited performance on minority classes.
+Support Vector Machine (SVM) achieved a balance between the two with 64.3% accuracy and 0.612 weighted F1, it struggled to predict high activity cases. The RBF kernel captured moderate nonlinearities as the class imbalance again limited performance on minority classes.
 
-Naive Bayes was the least effective, with only 25.7% accuracy and a weighted F1 score of 0.277. While it showed artificially high precision due to overfitting to dominant classes, its recall was poor across the board. This suggests that the independence assumption among features (e.g., sensor readings) may not hold for this dataset.
+Naive Bayes was the least effective, with only 25.7% accuracy and a weighted F1 score of 0.277. While it showed artificially high precision due to overfitting to dominant classes, its recall was poor across the board. This suggests that the independence assumption among features (e.g. sensor readings) may not hold for this dataset.
 
 To improve generalization, I applied grid search with 5-fold cross-validation for Random Forest, Logistic Regression, and SVM using a weighted F1 score as the scoring metric.
-Random Forest tuned best with n_estimators=100 and default max depth, reaching an F1 of 0.67 on cross-validation — consistent with its test performance.
-Logistic Regression performed best with C=10, though it remained limited by class imbalance.
+Random Forest tuned best with n_estimators=100 and default max depth, reaching an F1 of 0.67 on cross-validation which was consistent with its test performance.
+Logistic Regression performed best with C=10 but it remained limited by class imbalance.
 SVM tuned with C=1 and an RBF kernel, showing modest improvements over defaults.
 
 
